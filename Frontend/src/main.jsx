@@ -7,6 +7,7 @@ import './index.css';
 import Home from './components/Home.jsx'
 import Login from './components/Login.jsx'
 import Signup from './components/Signup.jsx'
+import Dashboard from './components/Dashboard.jsx';
 
 
 const router = createBrowserRouter([
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
       {
         path: '',
         element: <Home />
+      },
+      {
+        path: '/dashboard',
+        element: <Dashboard />
       },
       {
         path: '/login',

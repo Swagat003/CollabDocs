@@ -1,0 +1,38 @@
+.home-container {
+    @apply flex flex-col justify-center items-center h-screen; 
+    padding: 20px;
+    text-align: center;
+}
+
+.home-container h1 {
+    @apply text-3xl mb-4; 
+    font-size: 3rem;      
+}
+.home-container h1 span {
+    font-weight: 700;
+}
+.home-container h1 span img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 17px;
+    display: inline-block;
+}
+.home-container p {
+    @apply text-xl mb-4;
+    max-width: 600px;
+    font-size: 1.1rem;   
+}
+
+.home-container button {
+    background-color: #333;
+    color: white;
+    margin: 0 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+}
+
+.home-container button:hover {
+    background-color: #ff8f00;
+    transition: all 0.3s;
+}

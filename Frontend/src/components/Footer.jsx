@@ -6,7 +6,7 @@ function Footer() {
     <div>
         <div id='footer'>
             <p>Collab Docs</p>
-            <p>© 2021 Collab Docs</p>
+            <p>© 2024 Collab Docs</p>
         </div>
     </div>
   )
