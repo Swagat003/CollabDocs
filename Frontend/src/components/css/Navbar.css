@@ -38,3 +38,15 @@
 .active-link{
     color: #ff8f00;
 }
+#profile-name{
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+#logedout{
+    background-color: #333;
+    color: white;
+    margin: 0 10px;
+    padding: 5px 20px;
+    border: none;
+    border-radius: 5px;
+}
