@@ -1,9 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter , RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx';
 import './index.css';
 import 'react-toastify/ReactToastify.css';
+
+import PrivateRoute from './PrivateRoute.jsx';
+import PublicRoute from './PublicRoute.jsx';
 
 import Home from './components/Home.jsx'
 import Login from './components/Login.jsx'
@@ -18,26 +21,28 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <Home />
+        element: <PublicRoute element={<Home />} />
       },
       {
         path: '/dashboard',
-        element: <Dashboard />
+        element: <PrivateRoute element={<Dashboard />} />
       },
       {
         path: '/login',
-        element: <Login />
+        element: <PublicRoute element={<Login />} />
       },
       {
         path: '/signup',
-        element: <Signup />
+        element: <PublicRoute element={<Signup />} />
       }
     ]
   }
 ])
 
+
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-      <RouterProvider router={router}/>
+    <RouterProvider router={router} />
   </StrictMode>
 );
