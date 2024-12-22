@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App.jsx';
 import './index.css';
 import 'react-toastify/ReactToastify.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import PrivateRoute from './PrivateRoute.jsx';
 import PublicRoute from './PublicRoute.jsx';
