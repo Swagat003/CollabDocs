@@ -1,6 +1,7 @@
 import React from 'react';
 import './css/Dashboard.css';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 function Dashboard() {
@@ -33,13 +34,17 @@ function Dashboard() {
     setMenuVisible(menuVisible === id ? null : id);
   };
 
+  const navigateToDocument = (id) => {
+    navigate(`/document/${id}`);
+  }
+
   return (
     <div className="dashboard">
       <button className="create-doc-btn">Create New Document</button>
       <div className="doc-grid">
 
         {Documents.map((doc) => (
-          <div key={doc._id} className="doc-card">
+          <div key={doc._id} className="doc-card" onClick={() => navigateToDocument(doc._id)}>
           <div className="doc-card-content">
             <p className="doc-content-preview">{doc.content.substring(0, 100)}...</p>
             <div className="doc-card-footer">

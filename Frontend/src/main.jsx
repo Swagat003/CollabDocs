@@ -13,6 +13,7 @@ import Home from './components/Home.jsx'
 import Login from './components/Login.jsx'
 import Signup from './components/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx';
+import Document from './components/Document.jsx';
 
 
 const router = createBrowserRouter([
@@ -25,16 +26,20 @@ const router = createBrowserRouter([
         element: <PublicRoute element={<Home />} />
       },
       {
-        path: '/dashboard',
-        element: <PrivateRoute element={<Dashboard />} />
-      },
-      {
         path: '/login',
         element: <PublicRoute element={<Login />} />
       },
       {
         path: '/signup',
         element: <PublicRoute element={<Signup />} />
+      },
+      {
+        path: '/dashboard',
+        element: <PrivateRoute element={<Dashboard />} />
+      },
+      {
+        path: '/document/:id',
+        element: <PrivateRoute element={<Document />} />
       }
     ]
   }
