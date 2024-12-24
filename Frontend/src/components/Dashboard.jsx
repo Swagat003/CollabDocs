@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 function Dashboard() {
-
+  const navigate = useNavigate();
   const [Documents, setDocuments] = useState([]);
   const [menuVisible, setMenuVisible] = useState(null);
 
@@ -52,11 +52,11 @@ function Dashboard() {
                 <h3>{doc.title}</h3>
                 <p className="doc-date">{new Date(doc.createdDate).toLocaleDateString()}</p>
               </div>
-              <button className="menu-btn" onClick={() => toggleMenu(doc._id)}>
+              <button className="menu-btn" onClick={(e) => {e.stopPropagation(); toggleMenu(doc._id)}}>
                 <i className="fas fa-ellipsis-v"></i>
               </button>
               {menuVisible === doc._id && (
-                <div className="menu-options">
+                <div className="menu-options" onClick={(e) => e.stopPropagation()}>
                   <button>Edit</button>
                   <button>Delete</button>
                   <button>Share</button>
