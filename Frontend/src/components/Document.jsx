@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './css/Document.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import {ToastContainer, toast} from 'react-toastify';
 
 
 
 function Document() {
     const { id } = useParams();
     const [value, setValue] = useState('');
-    const [title, setTitle] = useState('My Document');
+    const [title, setTitle] = useState('');
     const navigate = useNavigate();
 
     const toolbarOptions = [
@@ -23,9 +24,44 @@ function Document() {
         ['clean']
     ];
 
+    const fetchDocument = async () => {
+        try {
+            const url = `/api/documents/${id}`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            setValue(data.content);
+            setTitle(data.title);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    useEffect(() => {
+        fetchDocument();
+    }, [id]);
+    
     const handleSave = () => {
-        // Implement save functionality
-        console.log('Document saved');
+        try {
+            const url = `/api/documents/${id}`;
+            fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ title, content: value })
+            });
+            toast.success('Document saved successfully');
+        }
+        catch (err) {
+            console.error(err);
+        }
     };
 
     const handleDownload = () => {
@@ -64,6 +100,7 @@ function Document() {
                 onChange={setValue}
                 modules={{ toolbar: toolbarOptions }}
             />
+            <ToastContainer />
         </>
     );
 }

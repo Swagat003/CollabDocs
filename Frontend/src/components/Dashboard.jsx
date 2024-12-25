@@ -2,12 +2,44 @@ import React from 'react';
 import './css/Dashboard.css';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import Modal from './Modal';
 
 
 function Dashboard() {
   const navigate = useNavigate();
   const [Documents, setDocuments] = useState([]);
   const [menuVisible, setMenuVisible] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [modalAction, setModalAction] = useState('');
+  const [currentDocId, setCurrentDocId] = useState(null);
+
+  const checkTokenValidity = async () => {
+    if (!localStorage.getItem('token')) {
+      navigate('/');
+    } else {
+      try {
+        const url = '/api/auth/verify';
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/');
+          throw new Error(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
 
   const fetchDocuments = async () => {
     try {
@@ -20,6 +52,9 @@ function Dashboard() {
         }
       });
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
       setDocuments(data);
     } catch (err) {
       console.error(err);
@@ -27,8 +62,12 @@ function Dashboard() {
   }
 
   useEffect(() => {
+    checkTokenValidity();
+  },[]);
+
+  useEffect(() => {
     fetchDocuments()
-  }, []);
+  });
 
   const toggleMenu = (id) => {
     setMenuVisible(menuVisible === id ? null : id);
@@ -38,37 +77,133 @@ function Dashboard() {
     navigate(`/document/${id}`);
   }
 
+  const handleCreateNewDocument = async () => {
+    if (!newTitle.trim()) {
+      toast.error('Document title cannot be empty.');
+      return;
+    }
+
+    try {
+      const url = '/api/documents';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title: newTitle, content: ' ' })
+      });
+
+      const data = await response.json();
+      console.log('Response:', response.status, data);
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      setDocuments((prevDocs) => [...prevDocs, data]);
+      setIsModalOpen(false);
+      setNewTitle('');
+      toast.success('Document created successfully!');
+    } catch (err) {
+      console.error('Error creating document:', err);
+      toast.error('Failed to create document. Please try again.');
+    }
+  };
+
+
+  const handleRenameDocument = async () => {
+    try {
+      const url = `/api/documents/${currentDocId}`;
+      await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title: newTitle })
+      });
+      setDocuments(Documents.map(doc => doc._id === currentDocId ? { ...doc, title: newTitle } : doc));
+      setIsModalOpen(false);
+      setNewTitle('');
+      setCurrentDocId(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteDocument = async (id) => {
+    try {
+      const url = `/api/documents/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+      setDocuments(Documents.filter(doc => doc._id !== id));
+      toast.success('Document deleted successfully.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete document. Please try again.');
+    }
+  };
+  
+  const openCreateModal = () => {
+    setModalAction('Create');
+    setIsModalOpen(true);
+  };
+
+  const openRenameModal = (id, title) => {
+    setCurrentDocId(id);
+    setNewTitle(title);
+    setModalAction('Rename');
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="dashboard">
-      <button className="create-doc-btn">Create New Document</button>
+      <button className="create-doc-btn" onClick={openCreateModal}>Create New Document</button>
       <div className="doc-grid">
 
         {Documents.map((doc) => (
           <div key={doc._id} className="doc-card" onClick={() => navigateToDocument(doc._id)}>
-          <div className="doc-card-content">
-            <p className="doc-content-preview">{doc.content.substring(0, 100)}...</p>
-            <div className="doc-card-footer">
-              <div>
-                <h3>{doc.title}</h3>
-                <p className="doc-date">{new Date(doc.createdDate).toLocaleDateString()}</p>
-              </div>
-              <button className="menu-btn" onClick={(e) => {e.stopPropagation(); toggleMenu(doc._id)}}>
-                <i className="fas fa-ellipsis-v"></i>
-              </button>
-              {menuVisible === doc._id && (
-                <div className="menu-options" onClick={(e) => e.stopPropagation()}>
-                  <button>Edit</button>
-                  <button>Delete</button>
-                  <button>Share</button>
-                  <button>Download</button>
+            <div className="doc-card-content">
+              <p className="doc-content-preview">{doc.content ? doc.content.substring(0, 100) : 'No content available'}...</p>
+              <div className="doc-card-footer">
+                <div>
+                  <h3>{doc.title}</h3>
+                  <p className="doc-date">{new Date(doc.createdDate).toLocaleDateString()}</p>
                 </div>
-              )}
+                <button className="menu-btn" onClick={(e) => { e.stopPropagation(); toggleMenu(doc._id); }}>
+                  <i className="fas fa-ellipsis-v"></i>
+                </button>
+                {menuVisible === doc._id && (
+                  <div className="menu-options" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => openRenameModal(doc._id, doc.title)}>Rename</button>
+                    <button onClick={()=> handleDeleteDocument(doc._id)}>Delete</button>
+                    <button>Share</button>
+                    <button>Download</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
         ))}
 
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAction={modalAction === 'Create' ? handleCreateNewDocument : handleRenameDocument}
+        title={newTitle}
+        setTitle={setNewTitle}
+        actionText={modalAction}
+      />
+      <ToastContainer />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export const deleteDocument = async (req, res) => {
         if (document.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
-        await document.delete();
+        await DocumentModel.findByIdAndDelete(id);
         res.status(204).end();
     } catch (error) {
         console.error(error);
