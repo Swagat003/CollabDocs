@@ -152,6 +152,44 @@ function Dashboard() {
     }
   };
   
+  const handleDownloadDocument = async (id) => {
+    try {
+      const url = `/api/documents/${id}`;
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            const title = data.title;
+            const content = data.content;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>${title}</title>
+                        <link rel="stylesheet" href="https://unpkg.com/react-quill@1.3.3/dist/quill.snow.css">
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            h1 { font-size: 24px; }
+                            p { font-size: 14px; }
+                            .ql-editor { margin: 1in !important; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="ql-editor">${content}</div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => printWindow.print(), 300);
+      } catch (err) {
+        console.error(err);
+      }
+  }
+
   const openCreateModal = () => {
     setModalAction('Create');
     setIsModalOpen(true);
@@ -186,7 +224,7 @@ function Dashboard() {
                     <button onClick={() => openRenameModal(doc._id, doc.title)}>Rename</button>
                     <button onClick={()=> handleDeleteDocument(doc._id)}>Delete</button>
                     <button>Share</button>
-                    <button>Download</button>
+                    <button onClick={() => handleDownloadDocument(doc._id)}>Download</button>
                   </div>
                 )}
               </div>

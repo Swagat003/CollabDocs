@@ -31,8 +31,8 @@
         font-weight: 600;
         color: #333;
         background-color: transparent;
-        width:200px;
         border: none;
+        display: flex;
     }
 
     #doc-title:focus {
@@ -92,7 +92,7 @@
 }
 
 @page {
-    margin: 1in;
+    margin: 1in !important;
 }
 
 @media print {
@@ -106,10 +106,11 @@
         height: 9in !important;
         padding: 1in !important;
         margin: 0 !important;
-        background-color: #fff;
-        box-shadow: none;
-        border: none;
-        align-self: flex-start;
+        background-color: #fff !important;
+        box-shadow: none !important;
+        border: none !important;
+        align-self: flex-start !important;
+        outline: none !important;
     }
     #navbar {
       display: none;
@@ -123,4 +124,8 @@
     .ql-toolbar.ql-snow {
       display: none;
     }
+    *::-webkit-scrollbar {
+      display: none;
+    }
+
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import './css/Document.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import {ToastContainer, toast} from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 
 
 
@@ -45,7 +45,7 @@ function Document() {
     useEffect(() => {
         fetchDocument();
     }, [id]);
-    
+
     const handleSave = () => {
         try {
             const url = `/api/documents/${id}`;
@@ -65,8 +65,26 @@ function Document() {
     };
 
     const handleDownload = () => {
-        // Implement download functionality
-        console.log('Document downloaded');
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>${title}</title>
+                    <link rel="stylesheet" href="https://unpkg.com/react-quill@1.3.3/dist/quill.snow.css">
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { font-size: 24px; }
+                        p { font-size: 14px; }
+                        .ql-editor { margin: 1in !important; }
+                    </style>
+                </head>
+                <body>
+                    <div class="ql-editor">${value}</div>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 300);
     };
 
     const handleShare = () => {
@@ -79,14 +97,7 @@ function Document() {
             <div className="menu-bar">
                 <div className="menu-section left">
                     <button id='back-btn' onClick={() => navigate(-1)}><i className="fas fa-arrow-left"></i></button>
-                    <input
-                        id='doc-title'
-                        type="text"
-                        placeholder="Title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        readOnly={true}
-                    />
+                    <div id='doc-title'>{title}</div>
                 </div>
                 <div className="menu-section right">
                     <button className='menus' onClick={handleSave}>Save</button>
