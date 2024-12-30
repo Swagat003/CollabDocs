@@ -172,10 +172,17 @@ function Dashboard() {
                         <title>${title}</title>
                         <link rel="stylesheet" href="https://unpkg.com/react-quill@1.3.3/dist/quill.snow.css">
                         <style>
-                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            body { font-family: Arial, sans-serif;}
                             h1 { font-size: 24px; }
                             p { font-size: 14px; }
                             .ql-editor { margin: 1in !important; }
+                            @page { size: A4; margin: 1in; }
+                            @media print {
+                                * {
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                            }
                         </style>
                     </head>
                     <body>
