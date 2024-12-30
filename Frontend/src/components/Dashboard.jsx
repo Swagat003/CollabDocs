@@ -1,6 +1,6 @@
 import React from 'react';
 import './css/Dashboard.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import Modal from './Modal';
@@ -14,6 +14,7 @@ function Dashboard() {
   const [newTitle, setNewTitle] = useState('');
   const [modalAction, setModalAction] = useState('');
   const [currentDocId, setCurrentDocId] = useState(null);
+  const menuRef = useRef(null);
 
   const checkTokenValidity = async () => {
     if (!localStorage.getItem('token')) {
@@ -69,6 +70,19 @@ function Dashboard() {
     fetchDocuments()
   });
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuVisible(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [menuRef]);
+  
   const toggleMenu = (id) => {
     setMenuVisible(menuVisible === id ? null : id);
   };
@@ -227,7 +241,7 @@ function Dashboard() {
                   <i className="fas fa-ellipsis-v"></i>
                 </button>
                 {menuVisible === doc._id && (
-                  <div className="menu-options" onClick={(e) => e.stopPropagation()}>
+                  <div ref={menuRef} className="menu-options" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => openRenameModal(doc._id, doc.title)}>Rename</button>
                     <button onClick={()=> handleDeleteDocument(doc._id)}>Delete</button>
                     <button>Share</button>
@@ -242,7 +256,7 @@ function Dashboard() {
       </div>
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {setIsModalOpen(false); setNewTitle(''); setCurrentDocId(null);}}
         onAction={modalAction === 'Create' ? handleCreateNewDocument : handleRenameDocument}
         title={newTitle}
         setTitle={setNewTitle}
