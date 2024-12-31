@@ -1,5 +1,7 @@
 import DocumentModel from "../Models/document.js";
+import UserModel from "../Models/user.js";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 export const getDocumentById = async (req, res) => {
     try {
@@ -11,7 +13,8 @@ export const getDocumentById = async (req, res) => {
         if (document.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ message: 'Unauthorized' });
         }
-        res.status(200).json(document);
+        const collaboratorsEmails = await UserModel.find({ _id: { $in: document.collaborators } }).select('email');
+        res.status(200).json({ ...document.toObject(), collaborators: collaboratorsEmails });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });
@@ -20,7 +23,7 @@ export const getDocumentById = async (req, res) => {
 
 export const getAllDocuments = async (req, res) => {
     try {
-        const documents = await DocumentModel.find({ ownerId: req.user._id });
+        const documents = await DocumentModel.find({ ownerId: req.user._id }).select('-collaborators');
         res.status(200).json(documents);
     } catch (error) {
         console.error(error);
@@ -84,3 +87,71 @@ export const deleteDocument = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+
+export const addCollaborator = async (req, res) => {
+    try {
+        const { documentId, collaboratorEmail } = req.body;
+
+        const collaborator = await UserModel.findOne({ email: collaboratorEmail });
+        if (!collaborator) {
+            return res.status(404).json({ message: "User with this email does not exist." });
+        }
+
+        const document = await DocumentModel.findById(documentId);
+        if (!document) {
+            return res.status(404).json({ message: "Document not found." });
+        }
+
+        if (document.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Only the owner can add collaborators." });
+        }
+
+        if (document.ownerId.toString() === collaborator._id.toString()) {
+            return res.status(400).json({ message: "Owner is already a collaborator." });
+        }
+
+        if (document.collaborators.includes(collaborator._id)) {
+            return res.status(400).json({ message: "User is already a collaborator." });
+        }
+
+        document.collaborators.push(collaborator._id);
+        await document.save();
+
+        res.status(200).json({ message: "Collaborator added successfully.", document });
+    } catch (error) {
+        console.error("Error adding collaborator:", error);
+        res.status(500).json({ message: "Internal Server Error." });
+    }
+};
+
+export const removeCollaborator = async (req, res) => {
+    try {
+        const { id, collaboratorId } = req.params;
+        const document = await DocumentModel.findById(id);
+        if (!document) {
+            return res.status(404).json({ message: "Document not found." });
+        }
+
+        if (document.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Only the owner can remove collaborators." });
+        }
+
+        if (document.ownerId.toString() === collaboratorId) {
+            return res.status(400).json({ message: "Owner cannot be removed." });
+        }
+
+        const collaboratorIndex = document.collaborators.indexOf(collaboratorId);
+        if (collaboratorIndex === -1) {
+            return res.status(400).json({ message: "User is not a collaborator." });
+        }
+
+        document.collaborators.splice(collaboratorIndex, 1);
+        await document.save();
+
+        res.status(200).json({ message: "Collaborator removed successfully.", document });
+    } catch (error) {
+        console.error("Error removing collaborator:", error);
+        res.status(500).json({ message: "Internal Server Error." });
+    }
+};

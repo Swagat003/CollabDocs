@@ -244,7 +244,6 @@ function Dashboard() {
                   <div ref={menuRef} className="menu-options" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => openRenameModal(doc._id, doc.title)}>Rename</button>
                     <button onClick={()=> handleDeleteDocument(doc._id)}>Delete</button>
-                    <button>Share</button>
                     <button onClick={() => handleDownloadDocument(doc._id)}>Download</button>
                   </div>
                 )}

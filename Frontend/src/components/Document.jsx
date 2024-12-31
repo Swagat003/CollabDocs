@@ -1,17 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './css/Document.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { ToastContainer, toast } from 'react-toastify';
-
+import io from 'socket.io-client';
+import CollaboratorSidebar from './CollaboratorSidebar';
 
 
 function Document() {
+
     const { id } = useParams();
     const [value, setValue] = useState('');
     const [title, setTitle] = useState('');
+    const [collaborators, setCollaborators] = useState([]);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const navigate = useNavigate();
+
+
+    const checkTokenValidity = async () => {
+        if (!localStorage.getItem('token')) {
+            navigate('/');
+        } else {
+            try {
+                const url = '/api/auth/verify';
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    navigate('/');
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    }
+
+    useEffect(() => {
+        checkTokenValidity();
+    }, []);
+
+    const socket = useMemo(() => io("/", {
+        auth: {
+            token: localStorage.getItem('token'),
+        },
+        query: {
+            documentId: id,
+        },
+    }), [id]);
 
     const toolbarOptions = [
         [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
@@ -37,6 +81,7 @@ function Document() {
             const data = await response.json();
             setValue(data.content);
             setTitle(data.title);
+            setCollaborators(data.collaborators);
         } catch (err) {
             console.error(err);
         }
@@ -46,10 +91,74 @@ function Document() {
         fetchDocument();
     }, [id]);
 
-    const handleSave = () => {
+    const setupSocket = useCallback(() => {
+        socket.emit('join-document', id);
+
+        socket.on('document-fetch', ({ content, title, collaborators }) => {
+            setValue(content);
+            setTitle(title);
+            setCollaborators(collaborators);
+        });
+
+        socket.on('document-update', ({ content, title }) => {
+            setValue(content);
+            setTitle(title);
+        });
+
+        socket.on('collaborators-update', (updatedCollaborators) => {
+            setCollaborators(updatedCollaborators);
+        });
+
+        socket.on('collaborator-removed', () => {
+            socket.disconnect();
+            toast.error('You have been removed as a collaborator');
+            navigate('/');
+        });
+        
+        socket.on('reconnect-sockets', () => {
+            socket.disconnect();
+            setTimeout(() => {
+                socket.connect();
+                setupSocket();
+            }, 1000);
+        });
+
+        return () => {
+            socket.off('document-fetch');
+            socket.off('document-update');
+            socket.off('collaborators-update');
+            socket.off('collaborator-removed');
+            socket.off('reconnect-sockets');
+            socket.disconnect();
+        };
+    }, [id, socket, navigate]);
+
+    useEffect(() => {
+        setupSocket();
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                setupSocket();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [setupSocket]);
+
+
+    const handleContentChange = (newContent) => {
+        setValue(newContent);
+        socket.emit('edit-document', { content: newContent, title });
+    };
+
+    const handleSave = async () => {
         try {
             const url = `/api/documents/${id}`;
-            fetch(url, {
+            const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,10 +166,15 @@ function Document() {
                 },
                 body: JSON.stringify({ title, content: value })
             });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
             toast.success('Document saved successfully');
         }
         catch (err) {
             console.error(err);
+            toast.error(err.message);
         }
     };
 
@@ -95,8 +209,82 @@ function Document() {
     };
 
     const handleShare = () => {
-        // Implement share functionality
-        console.log('Document shared');
+        setIsSidebarOpen(true);
+    };
+
+    const onClose = () => {
+        setIsSidebarOpen(false);
+    };
+
+
+    const addCollaborator = async (documentId, email) => {
+        try {
+            const url = `/api/documents/${id}/collaborator`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ documentId, collaboratorEmail: email })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                const url = `/api/documents/${id}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                const updatedCollaborators = data.collaborators;
+                setCollaborators(updatedCollaborators);
+                socket.emit('update-collaborators', updatedCollaborators);
+                toast.success('Collaborator added successfully');
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to add collaborator');
+        }
+    };
+
+    const removeCollaborator = async (documentId, collaboratorId) => {
+        try {
+            const url = `/api/documents/${id}/collaborator/${collaboratorId}`;
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                const url = `/api/documents/${id}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                const updatedCollaborators = data.collaborators;
+                setCollaborators(updatedCollaborators);
+                socket.emit('update-collaborators', updatedCollaborators);
+                socket.emit('remove-collaborator', collaboratorId);
+                toast.success('Collaborator removed successfully');
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to remove collaborator');
+        }
     };
 
     return (
@@ -115,8 +303,16 @@ function Document() {
             <ReactQuill
                 theme="snow"
                 value={value}
-                onChange={setValue}
+                onChange={handleContentChange}
                 modules={{ toolbar: toolbarOptions }}
+            />
+            <CollaboratorSidebar
+                isOpen={isSidebarOpen}
+                onClose={() => onClose()}
+                documentId={id}
+                collaborators={collaborators}
+                addCollaborator={addCollaborator}
+                removeCollaborator={removeCollaborator}
             />
             <ToastContainer />
         </>
