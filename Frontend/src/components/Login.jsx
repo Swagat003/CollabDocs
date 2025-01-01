@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import './css/Login.css'
 
 function Login() {
+  const env = import.meta.env;
   const [Logininfo, setLogininfo] = useState({
     email: '',
     password: '',
@@ -26,7 +27,7 @@ function Login() {
       return;
     }
     try {
-      const url = '/api/auth/login';
+      const url = `${env.VITE_BACKEND_URL}/api/auth/login`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {

@@ -9,7 +9,7 @@ import CollaboratorSidebar from './CollaboratorSidebar';
 
 
 function Document() {
-
+    const env = import.meta.env;
     const { id } = useParams();
     const [value, setValue] = useState('');
     const [title, setTitle] = useState('');
@@ -23,7 +23,7 @@ function Document() {
             navigate('/');
         } else {
             try {
-                const url = '/api/auth/verify';
+                const url = `${env.VITE_BACKEND_URL}/api/auth/verify`;
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
@@ -70,7 +70,7 @@ function Document() {
 
     const fetchDocument = async () => {
         try {
-            const url = `/api/documents/${id}`;
+            const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -157,7 +157,7 @@ function Document() {
 
     const handleSave = async () => {
         try {
-            const url = `/api/documents/${id}`;
+            const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -219,7 +219,7 @@ function Document() {
 
     const addCollaborator = async (documentId, email) => {
         try {
-            const url = `/api/documents/${id}/collaborator`;
+            const url = `${env.VITE_BACKEND_URL}/api/documents/${id}/collaborator`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -230,7 +230,7 @@ function Document() {
             });
             const data = await response.json();
             if (response.ok) {
-                const url = `/api/documents/${id}`;
+                const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -254,7 +254,7 @@ function Document() {
 
     const removeCollaborator = async (documentId, collaboratorId) => {
         try {
-            const url = `/api/documents/${id}/collaborator/${collaboratorId}`;
+            const url = `${env.VITE_BACKEND_URL}/api/documents/${id}/collaborator/${collaboratorId}`;
             const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
@@ -264,7 +264,7 @@ function Document() {
             });
             const data = await response.json();
             if (response.ok) {
-                const url = `/api/documents/${id}`;
+                const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {

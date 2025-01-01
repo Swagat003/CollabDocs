@@ -7,6 +7,7 @@ import Modal from './Modal';
 
 
 function Dashboard() {
+  const env = import.meta.env;
   const navigate = useNavigate();
   const [Documents, setDocuments] = useState([]);
   const [menuVisible, setMenuVisible] = useState(null);
@@ -21,7 +22,7 @@ function Dashboard() {
       navigate('/');
     } else {
       try {
-        const url = '/api/auth/verify';
+        const url = `${env.VITE_BACKEND_URL}/api/auth/verify`;
         const response = await fetch(url, {
           method: 'POST',
           headers: {
@@ -44,7 +45,7 @@ function Dashboard() {
 
   const fetchDocuments = async () => {
     try {
-      const url = '/api/documents';
+      const url = `${env.VITE_BACKEND_URL}/api/documents`;
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -98,7 +99,7 @@ function Dashboard() {
     }
 
     try {
-      const url = '/api/documents';
+      const url = `${env.VITE_BACKEND_URL}/api/documents`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -128,7 +129,7 @@ function Dashboard() {
 
   const handleRenameDocument = async () => {
     try {
-      const url = `/api/documents/${currentDocId}`;
+      const url = `${env.VITE_BACKEND_URL}/api/documents/${currentDocId}`;
       await fetch(url, {
         method: 'PUT',
         headers: {
@@ -148,7 +149,7 @@ function Dashboard() {
 
   const handleDeleteDocument = async (id) => {
     try {
-      const url = `/api/documents/${id}`;
+      const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -168,7 +169,7 @@ function Dashboard() {
   
   const handleDownloadDocument = async (id) => {
     try {
-      const url = `/api/documents/${id}`;
+      const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 
 function Signup() {
+  const env = import.meta.env;
   const [Signininfo, setSignininfo] = useState({
     name: '',
     email: '',
@@ -25,7 +26,7 @@ function Signup() {
       return;
     }
     try {
-      const url = '/api/auth/signup';
+      const url = `${env.VITE_BACKEND_URL}/api/auth/signup`;
       const { confirmPassword, ...signinObject } = Signininfo;
       const response = await fetch(url, {
         method: 'POST',
