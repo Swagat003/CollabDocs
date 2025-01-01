@@ -48,7 +48,7 @@ function Document() {
         checkTokenValidity();
     }, []);
 
-    const socket = useMemo(() => io("/", {
+    const socket = useMemo(() => io(`${env.VITE_BACKEND_URL}`, {
         auth: {
             token: localStorage.getItem('token'),
         },
