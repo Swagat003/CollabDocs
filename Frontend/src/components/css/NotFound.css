@@ -1,0 +1,28 @@
+.not-found{
+    background-color: transparent;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 5px 10px;
+}
+
+.not-found h1{
+    text-align: center;
+    font-size: 3rem;
+    display: inline;
+    color: #333;
+}
+
+.not-found p{
+    text-align: center;
+    font-size: 1.5rem;
+    display: inline;
+    color: #333;
+}
+.not-found a{
+    font-size: 1.5rem;
+    color: blue;
+}
+

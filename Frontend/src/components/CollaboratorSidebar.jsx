@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './css/CollaboratorSidebar.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 const CollaboratorSidebar = ({ isOpen, onClose, documentId, collaborators, addCollaborator, removeCollaborator }) => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,15 @@ const CollaboratorSidebar = ({ isOpen, onClose, documentId, collaborators, addCo
       removeCollaborator(documentId, collaboratorId);
     }
   }
+
+  const handleCopyLink = () => {
+    const link = `${window.location.origin}/document/${documentId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      toast.success('Link copied to clipboard');
+    }).catch((err) => {
+      console.error('Failed to copy link: ', err);
+    });
+  };
 
   return (
     <div className={isOpen ? 'collaborator-sidebar open' : 'collaborator-sidebar'}>
@@ -49,6 +59,7 @@ const CollaboratorSidebar = ({ isOpen, onClose, documentId, collaborators, addCo
             <div className="no-collaborators">No collaborators added yet.</div>
           )}
         </div>
+        <button className='copy-link-btn' onClick={handleCopyLink}>Copy Link</button>
       </div>
     </div>
   );

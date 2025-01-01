@@ -14,6 +14,7 @@ import Login from './components/Login.jsx'
 import Signup from './components/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx';
 import Document from './components/Document.jsx';
+import NotFound from './components/NotFound.jsx';
 
 
 const router = createBrowserRouter([
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: '/document/:id',
         element: <PrivateRoute element={<Document />} />
+      },
+      {
+        path: '*',
+        element: <NotFound />
       }
     ]
   }
