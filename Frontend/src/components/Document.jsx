@@ -186,12 +186,14 @@ function Document() {
                     <title>${title}</title>
                     <link rel="stylesheet" href="https://unpkg.com/react-quill@1.3.3/dist/quill.snow.css">
                     <style>
-                        body { font-family: Arial, sans-serif;}
+                        body { font-family: Arial, sans-serif; margin: 0; }
+                        .print-wrapper { margin: 1in; }
                         h1 { font-size: 24px; }
                         p { font-size: 14px; }
-                        .ql-editor { margin: 1in !important; }
-                        @page { size: A4; margin: 1in; }
+                        .ql-editor { margin: 0 !important; }
+                        @page { size: A4; margin: 0; }
                         @media print {
+                            .print-wrapper { margin: 1in; }
                             * {
                                 -webkit-print-color-adjust: exact;
                                 print-color-adjust: exact;
@@ -200,7 +202,9 @@ function Document() {
                     </style>
                 </head>
                 <body>
-                    <div class="ql-editor">${value}</div>
+                    <div class="print-wrapper">
+                        <div class="ql-editor">${value}</div>
+                    </div>
                 </body>
             </html>
         `);

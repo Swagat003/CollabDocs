@@ -61,12 +61,13 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-}
+  }
+
 .ql-editor {
     width: 8.5in !important;
     height: 11in !important;
     padding: 1in !important;
-    margin: 1rem !important;
+    margin: 1rem auto !important;
     background-color: #fff;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
@@ -89,6 +90,12 @@
     z-index: 1;
     background-color: #f6f6f6;
     flex-wrap: wrap;
+}
+
+@media (orientation: portrait) {
+  .quill {
+    min-height: 100dvh;
+  }
 }
 
 @page {
