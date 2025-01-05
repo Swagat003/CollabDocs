@@ -1,6 +1,6 @@
 import React from 'react';
 import './css/Dashboard.css';
-import { useState, useEffect , useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import Modal from './Modal';
@@ -65,7 +65,7 @@ function Dashboard() {
 
   useEffect(() => {
     checkTokenValidity();
-  },[]);
+  }, []);
 
   useEffect(() => {
     fetchDocuments()
@@ -83,7 +83,7 @@ function Dashboard() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [menuRef]);
-  
+
   const toggleMenu = (id) => {
     setMenuVisible(menuVisible === id ? null : id);
   };
@@ -166,22 +166,22 @@ function Dashboard() {
       toast.error('Failed to delete document. Please try again.');
     }
   };
-  
+
   const handleDownloadDocument = async (id) => {
     try {
       const url = `${env.VITE_BACKEND_URL}/api/documents/${id}`;
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            const title = data.title;
-            const content = data.content;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      const title = data.title;
+      const content = data.content;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
                 <html>
                     <head>
                         <title>${title}</title>
@@ -209,11 +209,11 @@ function Dashboard() {
                     </body>
                 </html>
             `);
-            printWindow.document.close();
-            setTimeout(() => printWindow.print(), 300);
-      } catch (err) {
-        console.error(err);
-      }
+      printWindow.document.close();
+      setTimeout(() => printWindow.print(), 300);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   const openCreateModal = () => {
@@ -236,6 +236,9 @@ function Dashboard() {
         {Documents.map((doc) => (
           <div key={doc._id} className="doc-card" onClick={() => navigateToDocument(doc._id)}>
             <div className="doc-card-content">
+              {doc.isOwned === false  && (
+                <span className="shared-label">Shared</span>
+              )}
               <p className="doc-content-preview">{doc.content ? doc.content.substring(0, 100) : 'No content available'}...</p>
               <div className="doc-card-footer">
                 <div>
@@ -248,7 +251,7 @@ function Dashboard() {
                 {menuVisible === doc._id && (
                   <div ref={menuRef} className="menu-options" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => openRenameModal(doc._id, doc.title)}>Rename</button>
-                    <button onClick={()=> handleDeleteDocument(doc._id)}>Delete</button>
+                    <button onClick={() => handleDeleteDocument(doc._id)}>Delete</button>
                     <button onClick={() => handleDownloadDocument(doc._id)}>Download</button>
                   </div>
                 )}
@@ -260,7 +263,7 @@ function Dashboard() {
       </div>
       <Modal
         isOpen={isModalOpen}
-        onClose={() => {setIsModalOpen(false); setNewTitle(''); setCurrentDocId(null);}}
+        onClose={() => { setIsModalOpen(false); setNewTitle(''); setCurrentDocId(null); }}
         onAction={modalAction === 'Create' ? handleCreateNewDocument : handleRenameDocument}
         title={newTitle}
         setTitle={setNewTitle}

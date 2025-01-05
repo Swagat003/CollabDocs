@@ -23,13 +23,27 @@ export const getDocumentById = async (req, res) => {
 
 export const getAllDocuments = async (req, res) => {
     try {
-        const documents = await DocumentModel.find({ ownerId: req.user._id }).select('-collaborators');
+        const userId = req.user._id;
+        const ownedDocuments = await DocumentModel.find({ ownerId: userId }).select('-collaborators');
+        const sharedDocuments = await DocumentModel.find({ collaborators: userId }).select('-collaborators');
+
+        const ownedDocumentsWithLabel = ownedDocuments.map(doc => ({
+            ...doc.toObject(),
+            isOwned: true
+        }));
+
+        const sharedDocumentsWithLabel = sharedDocuments.map(doc => ({
+            ...doc.toObject(),
+            isOwned: false
+        }));
+
+        const documents = [...ownedDocumentsWithLabel, ...sharedDocumentsWithLabel];
         res.status(200).json(documents);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 export const createDocument = async (req, res) => {
     try {
